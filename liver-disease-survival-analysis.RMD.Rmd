@@ -1,0 +1,368 @@
+---
+title: "Final Exam"
+output: html_document
+date: "2024-07-13"
+
+---
+
+
+
+```{R}
+
+library(survival)
+
+data(pbc)
+
+?pbc
+
+summary(pbc)
+
+```
+
+## Q1: Use the code below for converting a couple of variables into factors, from their original type. What is the purpose behind these conversions? Base you answer in the contextual information related to the dataset. This information can be pulled up by using the help function on pbc
+
+```{r}
+
+my.pbc <- na.omit(pbc[, -1])
+
+my.pbc$status <- as.factor(my.pbc$status) # status should be a factor
+my.pbc$ascites <- as.factor(my.pbc$ascites) # ascites should be factor
+my.pbc$hepato <- as.factor(my.pbc$hepato) # hepato should be factor
+my.pbc$stage <- as.factor(my.pbc$stage) # stage is ordinal/rank
+
+summary(my.pbc)
+
+```
+
+##Interpretation:
+
+The data shows the patient history of the majority of female patients with liver-related diseases. Other factors like bilirubin, AST, alkaline phosphatase, and albumin demonstrate that most of these patients have severely affected liver functions. People’s ages vary from 26 to 78 years; the mean age is about 50 years. These data indicate a shift of the patients towards the later stages of the disease (predominantly stages 2, 3, and 4), which points to the fact that a significant portion of patients suffer from advanced liver disease. Other variables include cholesterol, copper, and platelets, which depict other metabolic and hematologic profiles. This vast database proves useful in understanding the evolution of liver diseases and their effects on patients.
+
+
+## Q2 a:  Execute the code below associated with excluding trt, time, and status from the dataframe to produce a reduced version of the dataset represented by the data frame object labeled my.pbc.
+
+
+```{R}
+
+my.reduced.pbc <- my.pbc[, -c(1:3)]
+summary(my.reduced.pbc)
+
+```
+
+##Interpretation:
+
+This dataset contains information on 276 patients diagnosed with liver disease, with the majority of the respondents being female (88%). The median age is around 49 years, possibly due to the expansion of elderly health products and services. The clinical signs and symptoms in the patients include ascites in 7% and hepatomegaly in 51%. Spider angiomas are observed in 29% of patients, and edema in 11%. Serum bilirubin level varies from 0. 3 to 28 mg/dL with a mean of 3. 334 mg/dL; cholesterol levels noted mean 371. 3; and albumin level has a mean of 3. 517 g/dL. The average population of platelets is 261. 8 K/μL. Liver enzymes prove the mean of AST to be 124.12 IU/L and a mean adequate prothrombin time of 10.74 seconds. Disease staging shows 40 percent of the patients in Stage 3 and 34 percent in Stage 4. The variations in the liver disease symptoms shown in this study prove that the disease is both diverse and severe in the patients under consideration.
+
+
+## Q2 b: What would be a suitable model to predict presence of hepatomegaly or enlarged liver using age, sex, albumin, alk.phos , ast, and  biliin using the reduced version of the dataset (represented by the dataframe object with the label my.reduced.pbc)? Explain the rationale behind the specific modeling approach you have choose, based on the measurement type of the outcome variable.
+
+The type of model that can be used to estimate the probability of patients with hepatomegaly based on the predictors age, sex, albumin, alk phosphatase, aspartate aminotransaminase, and bilirubin is logistic regression. Logistic regression is more suitable in this regard since hepatomegaly, the outcome variable, is binary, having only two categories: enlarged liver and normal liver. This type of model outputs the probability that a given input point is part of a certain class and, in this case, whether a patient has hepatomegaly or not. In addition to the probability of the presence of hepatomegaly given the predictors, logistic regression will offer odds ratios for each predictor. Hence, these odds ratios are important when describing the degree and direction of the relationship between each predictor and hepatomegaly risk. On the basis of logistic regression analysis, one can determine the peculiarities of the demographic and clinical factors that could define the tendency towards the development of hepatomegaly.
+
+
+
+
+## Q2 c: Explain the purpose behind excluding the variables trt, time, and status variables as predictors: what is gained by excluding these variables as predictors? What would be a consequence if these three variables were retained and used as predictors?
+
+Excluding the variables treatment (trt), time, and status from the logistic regression model is important for clarity and accuracy.
+
+1.Treatment (trt):This variable refers to any interventions the patients might have received. Including it could bias the results because treatments can directly affect the likelihood of hepatomegaly, making it harder to see the true effects of the main predictors like age, sex, albumin, alkaline phosphatase, AST, and bilirubin.
+
+2.Time: This typically represents the follow-up period. It might not directly cause hepatomegaly but rather show how long data was collected. Including time could confuse the model's interpretation since it might interact with other variables in unpredictable ways.
+
+3.Status: This variable usually indicates whether a patient survived or not. Including it could lead to biased results since it’s an outcome that might be influenced by hepatomegaly or other predictors. It could also cause multicollinearity, where it’s highly correlated with hepatomegaly and other predictors, leading to unstable estimates.
+
+Overall, including these variables would complicate the model and make it harder to see the true relationships between the main predictors and hepatomegaly.
+
+
+
+
+##Q3: Based on your answer for Q2 b, using my.reduced.pbc dataframe , build a model to predict hepato using age, sex, albumin, alk.phos , ast, and  biliin 
+
+
+```{R}
+
+# Load necessary library
+library(stats)
+
+# Fit logistic regression model
+model <- glm(hepato ~ age + sex + albumin + alk.phos + ast + bili, data = my.reduced.pbc, family = binomial)
+summary(model)
+
+```
+
+
+##Interpretation:
+
+As it can be observed in the above logistic regression model, albumin and bilirubin (bili) are the variables that have a significant relationship with the outcome variable, hepato. while others such as age, sex, alk phos, and ast do not predict hepato. From the results presented in Table 3, the coefficient for albumin (-1. 127) has a negative sign, which implies that subjects with high levels of albumin have a low probability of developing hepatosis. Likewise, bilirubin (bili) has a positive coefficient of 0.160; this indicates a relationship that shows hepato is more likely to occur when bilirubin levels are elevated. On the other hand, age, sex, alk. Phos, and ast have nearly zero coefficients, but the p-value of non-significance suggests that the variables do not play a major role in the hepato model in the present study. This is informed by the degree of overall fit depicted by the deviance statistic and AIC.
+
+
+## Q3 a: Significant predictors.
+
+Significant Predictors:
+
+Albumin: Higher levels are associated with lower odds of hepato.
+Bilirubin (bili): Higher levels are associated with higher odds of hepato.
+
+Predictors with p-values less than 0.05 are considered significant.
+
+
+## Q3 b: Interpret the odds ratio of serum bilirubin (bili) and presence of hepatomegaly.
+
+```{r}
+
+# Calculate the odds ratio for serum bilirubin (bili)
+odds_ratio_bili <- exp(coef(model)["bili"])
+odds_ratio_bili
+
+
+```
+
+To assess the results of the odd ratio of serum bilirubin and hepatomegaly, the odd ratio is 1. 173551 indicates that the coefficient of serum bilirubin (mg/dl) is 17; this means that for each one-unit change in the variable, there will be a corresponding 17-unit change in the mortality rate. 36% predictive likelihood of having hepatomegaly or an enlarged liver compared to non-alcoholic fatty liver disease controls, as defined by other variables in the model. This implies that bilirubin levels may have a direct correlation with hepatomegaly since the majority of the cases have high bilirubin levels. 
+
+
+
+## Q4: For the model constructed in Q3, perform the needed key diagnostics and interpret the results of the model based on what you find here.
+
+
+```{R}
+
+library(dplyr)
+library(ggplot2)
+library(faraway)
+my.reduced.pbc <- mutate(my.reduced.pbc, residuals=residuals(model), linpred=predict(model))
+gdf <- group_by(my.reduced.pbc, cut(linpred, breaks=unique(quantile(linpred, (1:100)/101))))
+
+```
+
+```{r}
+
+diagdf <- summarise(gdf, residuals=mean(residuals), linpred=mean(linpred))
+
+```
+
+```{r}
+
+plot(residuals ~ linpred, diagdf, xlab="linear predictor")
+
+```
+
+## Interpretation:
+
+On the horizontal axis of the scatter plot, there is a linear predictor ranging from approximately -1 to 3 The values at the vertical axis are identified as residuals that vary between about -1 and 1. It is evident most of the residuals fall near the horizontal line indicating an adequate linear fit for the residual values pictured as 0. There is a negligible trend found across the degrees of dispersion of the data points.
+
+
+```{r}
+
+# Group by age and plot
+library(dplyr)
+library(ggplot2)
+
+my.reduced.pbc %>%
+  group_by(age) %>%
+  summarise(residuals = mean(residuals)) %>%
+  ggplot(aes(x = age, y = residuals)) + 
+  geom_point() + 
+  labs(title = "Residuals by Age", x = "Age", y = "Mean Residuals")
+
+
+```
+
+##Interpretation:
+
+The "Residuals by Age" plot shows the distribution of residuals across different ages. The residuals appear to be randomly dispersed around the mean residual value of approximately 0, indicating no clear pattern of bias or trend in the model with respect to age. Most residuals are within the range of -2 to 2, suggesting that the model's predictions are reasonably accurate across the age spectrum. However, there are some outliers, especially at the higher end of the age range, which may indicate a need for further investigation or potential model adjustments.
+
+
+
+```{r}
+# Group by sex and plot
+my.reduced.pbc %>%
+  group_by(sex) %>%
+  summarise(residuals = mean(residuals)) %>%
+  ggplot(aes(x = sex, y = residuals)) + 
+  geom_point() + 
+  labs(title = "Residuals by Sex", x = "Sex", y = "Mean Residuals")
+```
+
+##Interpretation:
+
+The graph depicts the mean residuals by sex, with males (m) showing a mean residual around 0.05 and females (f) having a mean residual close to 0. This suggests that the model's predictions are slightly overestimated for males and nearly accurate for females, indicating a potential bias in the model's performance based on sex.
+
+
+
+```{r}
+# Group by albumin and plot
+my.reduced.pbc %>%
+  group_by(albumin) %>%
+  summarise(residuals = mean(residuals)) %>%
+  ggplot(aes(x = albumin, y = residuals)) + 
+  geom_point() + 
+  labs(title = "Residuals by Albumin", x = "Albumin", y = "Mean Residuals")
+```
+
+##Interpretation:
+
+The graph shows the residuals of a model plotted against albumin levels ranging from approximately 2.0 to 4.5. The residuals fluctuate between -2 and +1, indicating the model's prediction errors. There is no clear trend, suggesting that the model's accuracy varies across different albumin levels, with some residuals notably high (around +1) or low (around -2) particularly in the range of 2.0 to 2.5 and 3.0 to 3.5. This variability indicates the model might need refinement to improve prediction consistency across albumin levels.
+
+
+```{r}
+# Group by alkaline phosphatase and plot
+my.reduced.pbc %>%
+  group_by(alk.phos) %>%
+  summarise(residuals = mean(residuals)) %>%
+  ggplot(aes(x = alk.phos, y = residuals)) + 
+  geom_point() + 
+  labs(title = "Residuals by Alkaline Phosphatase", x = "Alkaline Phosphatase", y = "Mean Residuals")
+```
+
+##Interpretation:
+
+The graph shows the residuals of a model plotted against alkaline phosphatase levels, which range from 0 to over 10,000. The residuals cluster densely around lower alkaline phosphatase values (0-2000) with a spread between -2 and +2, indicating high variability. As alkaline phosphatase values increase beyond 2000, the residuals become more sparse but show a wider spread, particularly with some high residuals above +1 and low residuals below -2, suggesting the model's prediction accuracy diminishes for higher alkaline phosphatase values.
+
+
+
+```{r}
+
+# Group by AST and plot
+my.reduced.pbc %>%
+  group_by(ast) %>%
+  summarise(residuals = mean(residuals)) %>%
+  ggplot(aes(x = ast, y = residuals)) + 
+  geom_point() + 
+  labs(title = "Residuals by AST", x = "AST", y = "Mean Residuals")
+```
+
+##Interpretation:
+
+The scatter plot shows the residuals of a regression model plotted against the aspartate aminotransferase (AST) values. The residuals, which range from approximately -2.5 to 1.5, are plotted on the y-axis, while the AST values, ranging from approximately 10 to 450, are plotted on the x-axis. The residuals appear to be randomly distributed around the zero line, with no clear pattern, trend, or funnel shape, suggesting that the model fits the data well and that the assumptions of linearity and homoscedasticity (constant variance of residuals) are reasonably met. However, there is a slight indication of increased variance at higher AST values, although this does not seem substantial. The majority of the residuals are within the range of -1 to 1, indicating that the model's predictions are generally close to the observed values.
+
+
+```{r}
+# Group by bilirubin and plot
+my.reduced.pbc %>%
+  group_by(bili) %>%
+  summarise(residuals = mean(residuals)) %>%
+  ggplot(aes(x = bili, y = residuals)) + 
+  geom_point() + 
+  labs(title = "Residuals by Bilirubin", x = "Bilirubin", y = "Mean Residuals")
+
+```
+
+##Interpretation:
+
+The graph shows the residuals of a model plotted against bilirubin levels, which range from 0 to about 25. The residuals are more concentrated around lower bilirubin values (0-10) and spread between -2 and +1, indicating variability in prediction errors. For bilirubin levels beyond 10, the residuals are more scattered but generally closer to zero, suggesting the model has lower prediction error at higher bilirubin levels. However, there are a few outliers with residuals below -2 and above +1, indicating occasional significant prediction errors.
+
+
+
+```{r}
+
+qqnorm(residuals(model))
+halfnorm(hatvalues(model))
+
+```
+
+##Interpretation:
+
+The Normal Q-Q plot shows the sample quantiles versus the theoretical quantiles from a normal distribution. The points deviate from the diagonal line, particularly at the tails (below -2 and above 2), indicating that the data is not normally distributed. The S-shaped curve suggests a potential bimodal distribution or heavy tails, as the data points show systematic deviations from the expected straight line under normality assumptions.
+
+
+The half-normal Q-Q plot shows the sorted data versus the half-normal quantiles. The data points follow the reference line closely until around 1.5, indicating a good fit to a half-normal distribution for lower quantiles. Beyond 1.5, the points start deviating upwards, with the maximum sorted data value reaching approximately 0.15, suggesting heavier tails or outliers in the upper quantiles. The numbers 48 and 146 indicate the extreme observations, which deviate the most from the half-normal distribution.
+
+
+
+## Q5: Next, use the code below and go back to using my.pbc. Add a new variable to represent two states of status: the original status values of 0 and 1 are mapped to a 0 and the original value of 2 onto a 1. In the R code, this new variable is labeled newstatus. What purpose would be served by combining the original 0 (censored) and 1 (transplant) into a single category, and the original 2 (dead) into another single category? (Hint: consider what you would need for status, if your goal is to model survival/non-survival). What is lost when combining the original 0 and 1 categories into a single new category? How will this affect the interpretation of the results?
+
+```{R}
+
+my.pbc$newstatus <- as.numeric(ifelse(my.pbc$status == 2, 1, 0))
+my.pbc <- my.pbc[, -2] # remove the original status variable
+
+summary(my.pbc)
+
+```
+
+##Interpretation:
+
+This dataset comes from a clinical study on liver disease, featuring patient information like age, sex, treatment group, and follow-up time. It includes medical measurements such as bilirubin, cholesterol, albumin, copper, alkaline phosphatase, aspartate aminotransferase, triglycerides, platelet count, and prothrombin time, as well as indicators for ascites, hepatomegaly, spider angiomas, and edema. The median patient age is around 50 years, with more female patients than male. There are some missing values and outliers in the data, so careful handling is needed for accurate analysis. This dataset is useful for examining liver disease progression or treatment outcomes.
+
+
+## Q6: Fit a CoxPH model to predict the hazard function of newstatus using age+sex+albumin+alk.phos+ast+bili . Identify significant predictors? 
+
+```{R}
+
+cox.model <- coxph(Surv(time, newstatus) ~ age + sex + albumin + alk.phos + ast + bili, data = my.pbc)
+summary(cox.model)
+
+```
+
+
+##Interpretation:
+
+In our study using a statistical model called Cox proportional hazards, we looked at what factors influence how long people survive. We studied 276 individuals, and out of those, 111 experienced the event we were interested in. Here's what we found: Getting older was linked to a higher risk, with each additional year increasing the risk by about 3.9%. Women tended to have a lower risk compared to men, but this finding was just borderline significant. Low levels of albumin, a protein in the blood, were strongly connected to higher risk, reducing the chance of survival by about 73.4%. On the other hand, higher bilirubin levels, a compound produced by the liver, increased the risk by about 13.2%. Levels of alkaline phosphatase and aspartate aminotransferase didn't seem to affect the risk significantly. Overall, our model did a good job at predicting outcomes, with an accuracy rate of about 81.3%.
+
+
+## Q7: Identify the key assumption(s) associated with the CoxPH modeling approach, and explain whether it/they are satisfied, using appropriate evidence.
+
+
+```{R}
+
+cox.zph(cox.model)
+
+```
+
+##Interpretation:
+
+The results indicate that for most of the factors tested—like age, sex, albumin, alkaline phosphatase, and AST levels—there isn't a significant relationship with the outcome we're interested in. However, bilirubin levels do show a notable association with the outcome (p = 0.004), suggesting it could be an important factor to consider. Overall, when looking at all these factors together, there's a hint of a potential combined effect (p = 0.094), although it's not strong enough to be considered statistically significant by typical standards.
+
+
+
+```{r}
+
+dfbeta <- residuals(cox.model, type="dfbeta")
+par(mfrow=c(3,3))
+## par(mfrow=c(2,2))
+for (j in 1:6) {
+  plot(dfbeta[, j], ylab=names(coef(cox.model))[j])
+  abline(h=0, lty=2)
+}
+
+```
+
+##Interpretation:
+
+1. Age Residuals vs. Index:
+   The residual plot for age shows residuals tightly clustered around zero with no discernible pattern or trend, suggesting that the age variable is well-fitted by the regression model. The range of the residuals is approximately from -0.006 to 0.006, indicating that the residuals are relatively small and there are no apparent violations of linearity or homoscedasticity.
+
+2. Sex Residuals vs. Index:
+   The residual plot for sex also indicates a good fit, as the residuals are centered around zero and exhibit no obvious pattern or trend. The range of the residuals is approximately from -0.05 to 0.05. This suggests that the model adequately captures the effect of the sex variable and that there are no issues with the independence of errors.
+
+3. Albumin Residuals vs. Index:
+   The residuals for albumin are similarly well-clustered around zero, indicating that the model fits this variable well. The residuals range from approximately -0.04 to 0.04, suggesting that the residuals are small and there are no significant deviations from the assumptions of the regression model.
+
+4. Alkaline Phosphatase (alk_phos) Residuals vs. Index:
+   The residual plot for alkaline phosphatase shows residuals clustered around zero with no apparent pattern, indicating a good fit for this variable. The range of the residuals is approximately from -1.15e-05 to 1.15e-05, which is very small, suggesting that the model captures the variation in alkaline phosphatase well and that there are no violations of linearity or homoscedasticity.
+
+5.Aspartate Aminotransferase (ast) Residuals vs. Index:
+   The residuals for aspartate aminotransferase are centered around zero with no obvious pattern, indicating a good fit for this variable. The range of the residuals is approximately from -1e-03 to 1e-03. This suggests that the model adequately captures the effect of aspartate aminotransferase and that the assumptions of the regression model are likely being met.
+
+6. Bilirubin (bili) Residuals vs. Index:
+   The residual plot for bilirubin shows residuals clustered around zero with no discernible pattern, indicating a good fit for this variable. The range of the residuals is approximately from -0.01 to 0.01. This suggests that the model captures the variation in bilirubin well and that there are no significant deviations from the assumptions of the regression model.
+   
+   
+*Reflection Questions:*
+
+## Q8: Which aspects of the course material did you find most challenging, and why?
+
+I found the statistical modeling parts of the course to be quite challenging. Understanding complex methods like Cox proportional hazards models and logistic regression required me to delve deeply into statistical theory and practical application. Making sure that the models I used met their assumptions and interpreting the results accurately were especially difficult. Dealing with real-world data issues, such as missing values and outliers, added another layer of complexity to performing robust analyses.
+
+To tackle these challenges, I focused on studying intensively on my own and practicing with tools like R. Working through case studies and using statistical software helped me visualize trends in data and evaluate how well my models were working. Seeking advice from teachers and classmates was also really helpful in getting different perspectives and improving my understanding of statistical concepts.
+
+## Q9: Areas of inferential modeling or data science to explore further.
+
+
+
+1. Bayesian Methods and Networks: In general, you are focused on Bayesian approach, including Bayesian networks because they can capture the dependencies between the variables, although the number of samples is rather limited. This enables one to put a measure on the degree of uncertainty and revision of belief with respect to events as new information arrives which is especially important in the sphere of healthcare.
+
+2. Causal Inference: Causal inference from observational data is another area that is considered to be very important. This entails identifying effects of treatments implemented to determine and analyze relationships that may help in the improvement of strategies in the healthcare system as well as the overall patient experiences.
+
+3. Advanced Machine Learning: You’re also interested in enhancing your skills in the more sophisticated techniques such as ensemble learning and deep learning. These methods are effective for the prediction regarding the healthcare data of different kind, and these predictions will help in the improvement of the decision making and eventually the healthcare of the people.
+
